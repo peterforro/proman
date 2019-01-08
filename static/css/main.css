@@ -1,3 +1,25 @@
-#boards {
-    background-color: green;
+
+
+.board {
+    padding: 20px;
+    border-radius: 25px;
+    box-shadow: 2px 2px 2px 2px black;
+}
+
+.cardArea {
+    border-radius: 25px;
+}
+
+
+.cardContainer{
+    min-height: 100px;
+}
+
+
+
+.proba {
+    width: 100%;
+    height: 20px;
+    margin: 10px;
+    background-color: white;
 }

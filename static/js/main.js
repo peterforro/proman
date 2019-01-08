@@ -1,10 +1,19 @@
-// This function is to initialize the application
-function init() {
-    // init data
-    dataHandler.init();
-    // loads the boards to the screen
-    dom.loadBoards();
+let dom = {
+    create_board: function () {
+        let boardTemplate = document.querySelector("#boardTemplate");
+        let boardClone = document.importNode(boardTemplate.content, true);
+        document.querySelector("#boardContainer").appendChild(boardClone);
+    },
+};
 
-}
+let gomb = document.querySelector("#addBoard");
+    gomb.addEventListener("click",function(event){
+    dom.create_board();
+    let board = Array.from(document.querySelectorAll(".board"));
+    board = board[board.length-1];
+    let cardContainer = Array.from(board.querySelectorAll(".cardContainer"));
+    dragula(cardContainer);
 
-init();
+});
+
+
