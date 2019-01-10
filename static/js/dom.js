@@ -81,11 +81,15 @@ export let dom = {
     },
 
 
-    initAddBoardBtn: function(){
-        let addBoardBtn = document.querySelector("#submitBoard");
+    initAddBoardForm: function(){
+        let btn = document.querySelector("#submitBoard");
+        let field = document.querySelector("#boardField");
+        field.addEventListener("keydown",function(){
+            btn.disabled = (field.value.length <= 4);
+        });
         addBoardBtn.addEventListener("click",function(){
             datamanager.postBoard();
-            document.querySelector("#boardField").value = "";
+            field.value = "";
         });
     },
 
