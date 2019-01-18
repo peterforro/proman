@@ -1,100 +1,104 @@
-import {datamanager} from "./datamanager.js";
+import {datamanager} from "./data_manager.js";
 
 
 export let dom = {
 
-    cloneTemplate: function(selector){
-        let template = document.querySelector(selector);
-        return document.importNode(template.content, true);
+    loadBoardsOnStartup: function() {
+        window.addEventListener("load",datamanager.getBoards);
     },
 
 
-    initTaskButton: function(){
-        let task = this.closest(".input-group").querySelector(".taskField").value;
-        let boardId = this.closest(".board").id.split("_")[1];
-        datamanager.postTask(task,boardId);
+    initSubmitBoardBtn: function() {
+        let addBoardBtn = document.querySelector("#submitBoard");
+        addBoardBtn.addEventListener("click",function(){
+            datamanager.postBoard();
+            document.querySelector("#boardField").value = "";
+        });
     },
 
 
-    collectTaskContainers: function(board){
-        let newBoard = document.querySelector(`#board_${board.id}`);
-        let cardContainer = Array.from(newBoard.querySelectorAll(".cardContainer"));
-        cardContainer.push(document.querySelector("#trash"));
-        return cardContainer;
+    cloneTemplate: function(selector) {
+        let boardTemplate = document.querySelector(selector);
+        return document.importNode(boardTemplate.content, true);
     },
 
 
-    collectBoards: function(board){
-        let boards = [document.querySelector(`#board_${board.id}`).parentElement];
-        boards.push(document.querySelector("#trash"));
-        console.log(boards);
-        return boards;
+    initCreateTaskBtn: function() {
+        let taskField = this.closest(".input-group").querySelector(".taskField");
+        let boardId = this.closest(".board").dataset.id;
+        datamanager.postTask(taskField.value,boardId);
+        taskField.value = "";
     },
 
 
-    tasksDropHandler: function(element, target){
-        if(target.id==="trash"){
-            element.remove();
+    setBoardClone: function(boardClone, boardData, callback) {
+        boardClone.querySelector(".board").dataset.id = boardData.id;
+        boardClone.querySelector(".board").setAttribute("id",`board_${boardData.id}`);
+        boardClone.querySelector(".board .boardName").textContent = boardData.name;
+        boardClone.querySelector(".board .submitTask").addEventListener("click",callback);
+    },
+
+
+    addBoardCloneToDom: function(boardClone) {
+        document.querySelector("#boardContainer").appendChild(boardClone);
+    },
+
+
+    createBoard: function (boardData) {
+        let boardClone = dom.cloneTemplate("#boardTemplate");
+        let boardContainer = boardClone.querySelector(".board").parentElement;
+        dom.setBoardClone(boardClone, boardData, dom.initCreateTaskBtn);
+        dom.addBoardCloneToDom(boardClone);
+        dom.dragulizeTasks(boardData, dom.tasksDropHandler);
+        dom.dragulizeBoard(boardContainer, dom.boardDropHandler);
+    },
+
+
+    createTask: function(task){
+        let taskClone = dom.cloneTemplate("#taskTemplate");
+        taskClone.querySelector(".taskCard").dataset.id = task.id;
+        taskClone.querySelector(".taskCard").textContent = task.task;
+        let board = document.querySelector(`#board_${task.board_id}`);
+        board.querySelector(`.${task.status}`).appendChild(taskClone);
+    },
+
+
+    boardDropHandler: function(board, targetContainer) {
+        if (targetContainer.id === "trash") {
+            let boardId = board.dataset.id;
+            datamanager.deleteBoard(boardId);
+            board.remove();
+        }
+    },
+
+
+    tasksDropHandler: function(task, targetContainer){
+        if (targetContainer.id === "trash") {
+            datamanager.deleteTask(task.dataset.id);
+            task.remove();
         } else {
-            let id = element.dataset.id;
-            let status = target.classList[2];
+            let id = task.dataset.id;
+            let status = targetContainer.dataset.status;
             datamanager.updateTask(id, status);
         }
     },
 
 
-    boardsDropHandler: function(element,target){
-        if(target.id==="trash"){
-            element.remove();
-        }
+    dragulizeTasks : function(boardData, dropHandler){
+        let newBoard = document.querySelector(`#board_${boardData.id}`);
+        let cardContainer = Array.from(newBoard.querySelectorAll(".cardContainer"));
+        cardContainer.push(document.querySelector("#trash"));
+        let drakeTasks = dragula(cardContainer);
+        drakeTasks.on("drop", dropHandler);
     },
 
 
-
-    dragulize: function(containers,dropHandler,moves){
-        let drake = dragula(containers,moves);
-        drake.on("drop",dropHandler);
-    },
-
-
-
-    createBoard: function (board) {
-        let boardClone = dom.cloneTemplate("#boardTemplate");
-        boardClone.querySelector(".board").setAttribute("id",`board_${board.id}`);
-        boardClone.querySelector(".board .boardName").textContent = board.name;
-        boardClone.querySelector(".board .submitTask").addEventListener("click",dom.initTaskButton);
-        document.querySelector("#boardContainer").appendChild(boardClone);
-        dom.dragulize(dom.collectTaskContainers(board),dom.tasksDropHandler);
-        dom.dragulize(dom.collectBoards(board),dom.boardsDropHandler,{
+    dragulizeBoard : function(boardContainer, dropHandler){
+        let containers = [boardContainer, document.querySelector("#trash")];
+        let drakeBoard = dragula(containers, {
             moves: function(el, container, handle) {
             return !handle.classList.contains('alert');
         }});
-    },
-
-
-    createTask: function(task){
-        console.log(`#board_${task.board_id} .${task.status}`);
-        let taskClone = dom.cloneTemplate("#taskTemplate");
-        taskClone.querySelector(".taskCard").dataset.id = task.id;
-        taskClone.querySelector(".taskCard").textContent = task.task;
-        document.querySelector(`#board_${task.board_id} .${task.status}`).appendChild(taskClone);
-    },
-
-
-    initAddBoardForm: function(){
-        let btn = document.querySelector("#submitBoard");
-        let field = document.querySelector("#boardField");
-        field.addEventListener("keydown",function(){
-            btn.disabled = (field.value.length <= 4);
-        });
-        addBoardBtn.addEventListener("click",function(){
-            datamanager.postBoard();
-            field.value = "";
-        });
-    },
-
-
-    loadBoardsOnStartUp: function(){
-        window.addEventListener("load",datamanager.getBoards);
-    },
+        drakeBoard.on("drop", dropHandler);
+    }
 };

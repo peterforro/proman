@@ -6,21 +6,14 @@ app = Flask(__name__)
 
 @app.route("/",methods=['GET'])
 def index():
-    return render_template('index.html')
+    return render_template('boards.html')
 
 
-@app.route('/load_boards/<int:board_id>')
 @app.route('/load_boards')
-def load_boards(board_id=None):
-    if board_id:
-        board = get_board(board_id)
-        tasks = get_tasks_by_board_id(board_id)
-        return jsonify({"board":board,"tasks":tasks})
+def load_boards():
     boards = get_boards()
-    for i,board in enumerate(boards):
-        boards[i]['tasks'] = get_tasks_by_board_id(board["id"])
-    return jsonify({"boards":boards})
-
+    tasks = get_tasks()
+    return jsonify({"boards":boards,"tasks":tasks})
 
 
 @app.route('/createBoard',methods=['POST'])
@@ -29,18 +22,29 @@ def create_board():
     return jsonify(new_board)
 
 
-
 @app.route('/createTask',methods=['POST'])
 def create_task():
     new_task = add_task(request.form)
     return jsonify(new_task)
 
 
-
 @app.route('/update_task',methods=['PUT'])
 def update_task():
     edit_task(request.form)
-    return jsonify({"message":"ok"}), 200
+    return jsonify({"message":"task is updated"})
+
+
+@app.route('/delete_task', methods=['DELETE'])
+def delete_task():
+    remove_task(request.form)
+    return jsonify({"message": "task is deleted"})
+
+
+@app.route('/delete_board', methods=['DELETE'])
+def delete_board():
+    remove_board(request.form)
+    return jsonify({"message": "board has been deleted"})
+
 
 
 

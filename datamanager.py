@@ -8,7 +8,6 @@ def get_boards(cursor):
     return cursor.fetchall()
 
 
-
 @connection_handler
 def add_board(cursor,name):
     query = ''' INSERT INTO boards (name,user_id)
@@ -18,7 +17,6 @@ def add_board(cursor,name):
     params = {"name":name}
     cursor.execute(query,params)
     return cursor.fetchone()
-
 
 
 @connection_handler
@@ -31,13 +29,11 @@ def add_task(cursor,task):
     return cursor.fetchone()
 
 
-
 @connection_handler
 def get_tasks(cursor):
     query = ''' SELECT * FROM tasks'''
     cursor.execute(query)
     return cursor.fetchall()
-
 
 
 @connection_handler
@@ -48,21 +44,15 @@ def edit_task(cursor,task):
     cursor.execute(query,task)
 
 
-
 @connection_handler
-def get_board(cursor,board_id):
-    query = ''' SELECT * FROM boards
-                WHERE id=%(board_id)s'''
-    params = {'board_id':board_id}
-    cursor.execute(query,params)
-    return cursor.fetchone()
-
+def remove_task(cursor, id):
+    query = ''' DELETE FROM tasks
+                WHERE id = %(id)s;'''
+    cursor.execute(query, id)
 
 
 @connection_handler
-def get_tasks_by_board_id(cursor,board_id):
-    query = ''' SELECT * FROM tasks
-                WHERE board_id=%(board_id)s'''
-    params = {'board_id':board_id}
-    cursor.execute(query,params)
-    return cursor.fetchall()
+def remove_board(cursor, id):
+    query = ''' DELETE FROM boards
+                WHERE id = %(id)s;'''
+    cursor.execute(query, id)
